@@ -23,6 +23,7 @@ app.use(express.json());
 
 /// Route files
 const secondChanceItemsRoutes = require('./routes/secondChanceItemsRoutes'); // Task 1
+const authRoutes = require('./routes/authRoutes'); // Task 1
 const pinoHttp = require('pino-http');
 const logger = require('./logger');
 
@@ -30,6 +31,7 @@ app.use(pinoHttp({ logger }));
 
 // Use Routes
 app.use('/api/secondchance/items', secondChanceItemsRoutes); // Task 2
+app.use('/api/auth', authRoutes); // Task 2
 
 
 // Global Error Handler
