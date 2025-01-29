@@ -96,9 +96,36 @@ router.post('/login', async (req, res) => {
         logger.error(`Internal server error: ${e.message}`);
         return res.status(500).send('Internal server error');
     }
+});    
+
+// Update Profile Name Endpoint
+router.put('/update-profile', authenticateToken, async (req, res) => {
+    try {
+        // Task 1: Connect to `secondChance` in MongoDB
+        const db = await connectToDatabase();
+
+        // Task 2: Access MongoDB `users` collection
+        const collection = db.collection('users');
+
+        // Task 3: Find and update the user’s name
+        const updatedUser = await collection.findOneAndUpdate(
+            { _id: req.user.id }, 
+            { $set: { firstName: req.body.firstName } }, 
+            { returnDocument: 'after' }
+        );
+
+        if (!updatedUser) {
+            logger.error('User not found');
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Task 4: Log and return success response
+        logger.info('User profile updated successfully');
+        res.json({ message: 'Profile updated successfully', firstName: updatedUser.firstName });
+    } catch (e) {
+        logger.error(`Internal server error: ${e.message}`);
+        return res.status(500).send('Internal server error');
+    }
 });
-
-
-
 
 module.exports = router;
