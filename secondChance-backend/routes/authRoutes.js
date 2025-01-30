@@ -4,8 +4,26 @@ const jwt = require('jsonwebtoken');
 const logger = require('../logger'); // Assuming you have a logger set up
 const connectToDatabase = require('../models/db'); // Assuming db.js exports the function
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; // Replace with actual secret from env variables
+const { ObjectId } = require('mongodb'); // Import ObjectId
 
 const router = express.Router();
+
+// Middleware to verify token
+const authenticateToken = (req, res, next) => {
+    const token = req.header('Authorization');
+
+    if (!token) {
+        return res.status(401).json({ error: 'Access denied, token missing' });
+    }
+
+    try {
+        const decoded = jwt.verify(token.replace('Bearer ', ''), JWT_SECRET);
+        req.user = decoded.user;
+        next();
+    } catch (error) {
+        res.status(403).json({ error: 'Invalid token' });
+    }
+};
 
 router.post('/register', async (req, res) => {
     try {
@@ -101,27 +119,32 @@ router.post('/login', async (req, res) => {
 // Update Profile Name Endpoint
 router.put('/update-profile', authenticateToken, async (req, res) => {
     try {
-        // Task 1: Connect to `secondChance` in MongoDB
-        const db = await connectToDatabase();
+        // Debugging: Check if `req.user.id` is being received
+        console.log('User ID:', req.user.id);
 
-        // Task 2: Access MongoDB `users` collection
+        // Task 1: Connect to MongoDB
+        const db = await connectToDatabase();
         const collection = db.collection('users');
 
+        // Task 2: Convert `req.user.id` into `ObjectId`
+        const userId = new ObjectId(req.user.id);
+
         // Task 3: Find and update the user’s name
-        const updatedUser = await collection.findOneAndUpdate(
-            { _id: req.user.id }, 
+        const result = await collection.findOneAndUpdate(
+            { _id: userId }, // Ensure `_id` is an ObjectId
             { $set: { firstName: req.body.firstName } }, 
-            { returnDocument: 'after' }
+            { returnDocument: 'after' } // Ensures updated document is returned
         );
 
-        if (!updatedUser) {
+        if (!result.value) { // Correct check for user existence
             logger.error('User not found');
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Task 4: Log and return success response
+        // Task 4: Log success & send response
         logger.info('User profile updated successfully');
-        res.json({ message: 'Profile updated successfully', firstName: updatedUser.firstName });
+        res.json({ message: 'Profile updated successfully', firstName: result.value.firstName });
+
     } catch (e) {
         logger.error(`Internal server error: ${e.message}`);
         return res.status(500).send('Internal server error');
