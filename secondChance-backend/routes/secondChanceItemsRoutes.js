@@ -15,18 +15,17 @@ const storage = multer.diskStorage({
     cb(null, directoryPath) // Specify the upload directory
   },
   filename: function (req, file, cb) {
-    cb(null, file.originalname); // Use the original file name
-  },
-});
+    cb(null, file.originalname) // Use the original file name
+  }
+})
 
-const upload = multer({ storage: storage });
-
+const upload = multer({ storage: storage })
 
 // Get all secondChanceItems
 router.get('/', async (req, res, next) => {
-    logger.info('/ called');
-    try {
-        const db = await connectToDatabase();
+logger.info('/ called')
+try {
+const db = await connectToDatabase();
         const collection = db.collection("secondChanceItems");
         const secondChanceItems = await collection.find({}).toArray();
         res.json(secondChanceItems);
