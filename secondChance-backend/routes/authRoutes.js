@@ -5,6 +5,7 @@ const connectToDatabase = require('../models/db');
 const router = express.Router();
 const dotenv = require('dotenv');
 const pino = require('pino');  // Import Pino logger
+const { body, validationResult } = require('express-validator')
 dotenv.config();
 
 const logger = pino();  // Create a Pino logger instance
@@ -86,5 +87,69 @@ router.post('/login', async (req, res) => {
         return res.status(500).send('Internal server error');
     }
 });    
+
+// Update
+router.put('/update', [
+    body('email').isEmail().withMessage('Invalid email format'),
+    body('firstName').notEmpty().withMessage('First name is required'),
+    body('lastName').notEmpty().withMessage('Last name is required'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            logger.error('Validation errors:', errors.array());
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const emailFromHeader = req.headers['email'];
+        if (!emailFromHeader) {
+            logger.error('Email missing in the request header');
+            return res.status(400).json({ error: 'Email is required in the request header' });
+        }
+
+        const db = await connectToDatabase();
+        const collection = db.collection("users");
+
+        const existingUser = await collection.findOne({ email: emailFromHeader });
+        if (!existingUser) {
+            logger.error(`User with email ${emailFromHeader} not found`);
+            return res.status(404).json({ error: `User with email ${emailFromHeader} not found` });
+        }
+
+        const salt = await bcryptjs.genSalt(10);
+        const hash = await bcryptjs.hash(req.body.password, salt);
+
+        const updatedFields = {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            password: hash,
+            updatedAt: new Date(),
+        };
+
+        const result = await collection.updateOne(
+            { _id: existingUser._id },
+            { $set: updatedFields }
+        );
+
+        if (result.modifiedCount === 0) {
+            logger.info(`User with email ${emailFromHeader} details were not updated`);
+            return res.status(200).json({ message: 'User details were not updated' });
+        }
+
+        const payload = {
+            user: {
+                id: existingUser._id,
+            },
+        };
+        const authtoken = jwt.sign(payload, JWT_SECRET);
+        logger.info(`User with email ${emailFromHeader} updated successfully`);
+        res.json({ authtoken });
+
+    } catch (e) {
+        logger.error('Error during user update:', e);
+        return res.status(500).send('Internal server error');
+    }
+});
 
 module.exports = router;
