@@ -108,8 +108,8 @@ router.put('/:id', async (req, res, next) => {
     secondChanceItem.updatedAt = new Date()
 
     const updateResult = await collection.findOneAndUpdate(
-      { id }
-      { $set: secondChanceItem }
+      { id },
+      { $set: secondChanceItem },
       { returnDocument: 'after' }
     )
 
