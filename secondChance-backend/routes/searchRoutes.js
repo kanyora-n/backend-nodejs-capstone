@@ -8,10 +8,10 @@ router.get('/', async (req, res, next) => {
     const db = await connectToDatabase()
     const collection = db.collection('gifts')
 
-   // Initialize the query object
-   const query = {}
+    // Initialize the query object
+    const query = {}
 
-   if (req.query.name) {
+    if (req.query.name) {
       query.name = { $regex: req.query.name, $options: 'i' } // Partial match, case-insensitive
     }
 
