@@ -1,6 +1,7 @@
 require('dotenv').config()
 const MongoClient = require('mongodb').MongoClient
 const fs = require('fs')
+const path = require('path')
 
 // MongoDB connection URL with authentication options
 const url = `${process.env.MONGO_URL}`
@@ -25,7 +26,7 @@ async function loadData () {
 
     // collection will be created if it does not exist
     const collection = db.collection(collectionName)
-    const cursor = await collection.find ({})
+    const cursor = await collection.find({})
     const documents = await cursor.toArray()
 
     if (documents.length === 0) {
@@ -33,7 +34,7 @@ async function loadData () {
       const insertResult = await collection.insertMany(data)
       console.log('Inserted documents:', insertResult.insertedCount)
     } else {
-      console.log("Items already exists in DB")
+      console.log('Items already exists in DB')
     }
   } catch (err) {
     console.error(err)
@@ -46,5 +47,5 @@ async function loadData () {
 loadData()
 
 module.exports = {
-  loadData,
+  loadData
 }
