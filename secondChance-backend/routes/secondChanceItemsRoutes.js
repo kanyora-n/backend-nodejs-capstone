@@ -1,7 +1,6 @@
 const express = require('express')
 const multer = require('multer')
 const path = require('path')
-const fs = require('fs')
 const router = express.Router()
 const connectToDatabase = require('../models/db')
 const logger = require('../logger')
@@ -71,7 +70,7 @@ router.post('/', upload.single('file'), async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const db = await connectToDatabase()
-  
+
     const collection = db.collection('secondChanceItems')
 
     const id = req.params.id
@@ -97,8 +96,8 @@ router.put('/:id', async (req, res, next) => {
     const secondChanceItem = await collection.findOne({ id })
     if (!secondChanceItem) {
       logger.error('secondChanceItem not found')
-     return res.status(404).json({ error: 'secondChanceItem not found' })
- }
+      return res.status(404).json({ error: 'secondChanceItem not found' })
+    }
 
     secondChanceItem.category = req.body.category || secondChanceItem.category
     secondChanceItem.condition = req.body.condition || secondChanceItem.condition
