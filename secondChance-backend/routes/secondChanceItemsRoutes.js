@@ -4,7 +4,7 @@ const path = require('path')
 const fs = require('fs')
 const router = express.Router()
 const connectToDatabase = require('../models/db')
-const logger = require('../logger');
+const logger = require('../logger')
 
 // Define the upload directory path
 const directoryPath = 'public/images'
@@ -12,14 +12,14 @@ const directoryPath = 'public/images'
 // Set up storage for uploaded files
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, directoryPath); // Specify the upload directory
+    cb(null, directoryPath) // Specify the upload directory
   },
   filename: function (req, file, cb) {
-    cb(null, file.originalname); // Use the original file name
+    cb(null, file.originalname) // Use the original file name
   }
 })
 
-const upload = multer({ storage: storage })
+const upload = multer({ storage })
 
 // Get all secondChanceItems
 // Get all secondChanceItems
@@ -72,34 +72,34 @@ router.get('/:id', async (req, res, next) => {
   try {
     const db = await connectToDatabase()
   
-     const collection = db.collection('secondChanceItems')
-  
-     const id = req.params.id
-     const secondChanceItem = await collection.findOne({ id })
-    
-     if (!secondChanceItem) return res.status(404).send('secondChanceItem not found')
+    const collection = db.collection('secondChanceItems')
 
-     res.json(secondChanceItem)
-   } catch (e) {
-     logger.error('Error fetching the secondChanceItem by ID', e)
-     next(e)
-   }
+    const id = req.params.id
+    const secondChanceItem = await collection.findOne({ id })
+
+    if (!secondChanceItem) return res.status(404).send('secondChanceItem not found')
+
+    res.json(secondChanceItem)
+  } catch (e) {
+    logger.error('Error fetching the secondChanceItem by ID', e)
+    next(e)
+  }
 })
 
 // Update and existing item
 router.put('/:id', async (req, res, next) => {
-   try {
-     const db = await connectToDatabase()
+  try {
+    const db = await connectToDatabase()
 
-     const collection = db.collection('secondChanceItems')
-    
-     const id = req.params.id
-     const secondChanceItem = await collection.findOne({ id })
-     if (!secondChanceItem) {
-       logger.error('secondChanceItem not found')
-       return res.status(404).json({ error: 'secondChanceItem not found' })
-  }
-    
+    const collection = db.collection('secondChanceItems')
+
+    const id = req.params.id
+    const secondChanceItem = await collection.findOne({ id })
+    if (!secondChanceItem) {
+      logger.error('secondChanceItem not found')
+     return res.status(404).json({ error: 'secondChanceItem not found' })
+ }
+
     secondChanceItem.category = req.body.category || secondChanceItem.category
     secondChanceItem.condition = req.body.condition || secondChanceItem.condition
     secondChanceItem.age_days = req.body.age_days || secondChanceItem.age_days
@@ -130,7 +130,7 @@ router.delete('/:id', async (req, res, next) => {
     const db = await connectToDatabase()
 
     const collection = db.collection('secondChanceItems')
-  
+
     const id = req.params.id
     const secondChanceItem = await collection.findOne({ id })
     if (!secondChanceItem) {
