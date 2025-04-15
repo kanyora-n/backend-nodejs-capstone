@@ -1,5 +1,5 @@
-require('dotenv').config();
-const express = require('express');
+require('dotenv').config()
+const express = require('express')
 const axios = require('axios');
 const logger = require('./logger');
 const expressPino = require('express-pino-logger')({ logger });
@@ -41,13 +41,13 @@ app.post('/sentiment', async (req, res) => {
 
     res.status(200).json({
       sentimentScore: analysisResult,
-      sentiment: sentiment
-    });
+      sentiment
+    })
   } catch (error) {
     logger.error(`Error performing sentiment analysis: ${error}`)
     res.status(500).json({ message: 'Error performing sentiment analysis' })
   }
 })
 app.listen(port, () => {
-    logger.info(`Server running on port ${port}`);
-});
+  logger.info(`Server running on port ${port}`)
+})
